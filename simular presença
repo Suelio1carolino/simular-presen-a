@@ -41,28 +41,48 @@ blueprint:
           max: 120
           unit_of_measurement: "min"
       default: 15
-    days:
-      name: Dias da Semana
-      description: Dias em que a simulação deve funcionar
+    monday:
+      name: Segunda-feira
+      description: Ativar simulação na Segunda-feira
       selector:
-        select:
-          multiple: true
-          options:
-            - label: Segunda-feira
-              value: "mon"
-            - label: Terça-feira
-              value: "tue"
-            - label: Quarta-feira
-              value: "wed"
-            - label: Quinta-feira
-              value: "thu"
-            - label: Sexta-feira
-              value: "fri"
-            - label: Sábado
-              value: "sat"
-            - label: Domingo
-              value: "sun"
-      default: ["mon", "tue", "wed", "thu", "fri", "sat", "sun"]
+        boolean:
+      default: true
+    tuesday:
+      name: Terça-feira
+      description: Ativar simulação na Terça-feira
+      selector:
+        boolean:
+      default: true
+    wednesday:
+      name: Quarta-feira
+      description: Ativar simulação na Quarta-feira
+      selector:
+        boolean:
+      default: true
+    thursday:
+      name: Quinta-feira
+      description: Ativar simulação na Quinta-feira
+      selector:
+        boolean:
+      default: true
+    friday:
+      name: Sexta-feira
+      description: Ativar simulação na Sexta-feira
+      selector:
+        boolean:
+      default: true
+    saturday:
+      name: Sábado
+      description: Ativar simulação no Sábado
+      selector:
+        boolean:
+      default: true
+    sunday:
+      name: Domingo
+      description: Ativar simulação no Domingo
+      selector:
+        boolean:
+      default: true
 
 mode: restart
 max_exceeded: silent
@@ -72,8 +92,50 @@ trigger:
     at: !input start_time
 
 condition:
-  - condition: time
-    weekday: !input days
+  - condition: or
+    conditions:
+      - condition: and
+        conditions:
+          - condition: time
+            weekday: mon
+          - condition: template
+            value_template: "{{ monday }}"
+      - condition: and
+        conditions:
+          - condition: time
+            weekday: tue
+          - condition: template
+            value_template: "{{ tuesday }}"
+      - condition: and
+        conditions:
+          - condition: time
+            weekday: wed
+          - condition: template
+            value_template: "{{ wednesday }}"
+      - condition: and
+        conditions:
+          - condition: time
+            weekday: thu
+          - condition: template
+            value_template: "{{ thursday }}"
+      - condition: and
+        conditions:
+          - condition: time
+            weekday: fri
+          - condition: template
+            value_template: "{{ friday }}"
+      - condition: and
+        conditions:
+          - condition: time
+            weekday: sat
+          - condition: template
+            value_template: "{{ saturday }}"
+      - condition: and
+        conditions:
+          - condition: time
+            weekday: sun
+          - condition: template
+            value_template: "{{ sunday }}"
 
 action:
   - repeat:
