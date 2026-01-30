@@ -1,16 +1,16 @@
 blueprint:
-  name: Simulador de Presença com Lâmpadas
-  description: Simula presença ligando lâmpadas aleatoriamente durante um período específico
+  name: Simulador de Presença com Interruptores
+  description: Simula presença ligando interruptores aleatoriamente durante um período específico
   domain: automation
   input:
-    lights:
-      name: Lâmpadas
-      description: Selecione as lâmpadas que serão usadas na simulação
+    switches:
+      name: Interruptores
+      description: Selecione os interruptores que serão usados na simulação
       selector:
         entity:
           multiple: true
           filter:
-            domain: light
+            domain: switch
     start_time:
       name: Horário de Início
       description: Horário para iniciar a simulação de presença
@@ -25,7 +25,7 @@ blueprint:
       default: "23:00:00"
     min_interval:
       name: Intervalo Mínimo (minutos)
-      description: Tempo mínimo entre mudanças de estado das lâmpadas
+      description: Tempo mínimo entre mudanças de estado dos interruptores
       selector:
         number:
           min: 1
@@ -34,7 +34,7 @@ blueprint:
       default: 5
     max_interval:
       name: Intervalo Máximo (minutos)
-      description: Tempo máximo entre mudanças de estado das lâmpadas
+      description: Tempo máximo entre mudanças de estado dos interruptores
       selector:
         number:
           min: 1
@@ -83,20 +83,20 @@ action:
           before: !input end_time
       sequence:
         - variables:
-            selected_lights: !input lights
-            random_light: "{{ selected_lights | random }}"
+            selected_switches: !input switches
+            random_switch: "{{ selected_switches | random }}"
             random_action: "{{ ['turn_on', 'turn_off'] | random }}"
             min_wait: !input min_interval
             max_wait: !input max_interval
             random_delay: "{{ range(min_wait, max_wait + 1) | random }}"
         
-        - service: "light.{{ random_action }}"
+        - service: "switch.{{ random_action }}"
           target:
-            entity_id: "{{ random_light }}"
+            entity_id: "{{ random_switch }}"
         
         - delay:
             minutes: "{{ random_delay }}"
   
-  - service: light.turn_off
+  - service: switch.turn_off
     target:
-      entity_id: !input lights
+      entity_id: !input switches
