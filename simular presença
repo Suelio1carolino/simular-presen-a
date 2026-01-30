@@ -1,0 +1,102 @@
+blueprint:
+  name: Simulador de Presença com Lâmpadas
+  description: Simula presença ligando lâmpadas aleatoriamente durante um período específico
+  domain: automation
+  input:
+    lights:
+      name: Lâmpadas
+      description: Selecione as lâmpadas que serão usadas na simulação
+      selector:
+        entity:
+          multiple: true
+          filter:
+            domain: light
+    start_time:
+      name: Horário de Início
+      description: Horário para iniciar a simulação de presença
+      selector:
+        time:
+      default: "18:00:00"
+    end_time:
+      name: Horário de Término
+      description: Horário para encerrar a simulação de presença
+      selector:
+        time:
+      default: "23:00:00"
+    min_interval:
+      name: Intervalo Mínimo (minutos)
+      description: Tempo mínimo entre mudanças de estado das lâmpadas
+      selector:
+        number:
+          min: 1
+          max: 60
+          unit_of_measurement: "min"
+      default: 5
+    max_interval:
+      name: Intervalo Máximo (minutos)
+      description: Tempo máximo entre mudanças de estado das lâmpadas
+      selector:
+        number:
+          min: 1
+          max: 120
+          unit_of_measurement: "min"
+      default: 15
+    days:
+      name: Dias da Semana
+      description: Dias em que a simulação deve funcionar
+      selector:
+        select:
+          multiple: true
+          options:
+            - label: Segunda-feira
+              value: "mon"
+            - label: Terça-feira
+              value: "tue"
+            - label: Quarta-feira
+              value: "wed"
+            - label: Quinta-feira
+              value: "thu"
+            - label: Sexta-feira
+              value: "fri"
+            - label: Sábado
+              value: "sat"
+            - label: Domingo
+              value: "sun"
+      default: ["mon", "tue", "wed", "thu", "fri", "sat", "sun"]
+
+mode: restart
+max_exceeded: silent
+
+trigger:
+  - platform: time
+    at: !input start_time
+
+condition:
+  - condition: time
+    weekday: !input days
+
+action:
+  - repeat:
+      while:
+        - condition: time
+          after: !input start_time
+          before: !input end_time
+      sequence:
+        - variables:
+            selected_lights: !input lights
+            random_light: "{{ selected_lights | random }}"
+            random_action: "{{ ['turn_on', 'turn_off'] | random }}"
+            min_wait: !input min_interval
+            max_wait: !input max_interval
+            random_delay: "{{ range(min_wait, max_wait + 1) | random }}"
+        
+        - service: "light.{{ random_action }}"
+          target:
+            entity_id: "{{ random_light }}"
+        
+        - delay:
+            minutes: "{{ random_delay }}"
+  
+  - service: light.turn_off
+    target:
+      entity_id: !input lights
